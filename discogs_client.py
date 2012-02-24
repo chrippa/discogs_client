@@ -3,9 +3,16 @@ __version__ = '1.1.1'
 
 import requests
 import json
-import urllib
-import httplib
 from collections import defaultdict
+
+# Python 3 compatibility
+try:
+    import http.client as httplib
+    import urllib.parse as urllib
+    unicode = str
+except ImportError:
+    import httplib
+    import urllib
 
 api_uri = 'http://api.discogs.com'
 user_agent = None
@@ -53,7 +60,7 @@ class APIBase(object):
         return '<%s "%s">' % (self.__class__.__name__, self._id)
 
     def __repr__(self):
-        return self.__str__().encode('utf-8')
+        return self.__str__()
 
     def _check_user_agent(self):
         if 'user_agent' in globals() and user_agent is not None:
@@ -83,7 +90,7 @@ class APIBase(object):
     @property
     def data(self):
         if self._response.content and self._response.status_code == 200:
-            release_json = json.loads(self._response.content)
+            release_json = json.loads(self._response.content.decode('utf-8'))
             return release_json.get('resp').get(self._uri_name)
         else:
             status_code = self._response.status_code
